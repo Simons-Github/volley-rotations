@@ -1,0 +1,126 @@
+{
+  "app": {
+    "title": "Rotation Rally",
+    "tagline": "Die 5-1-Rotation lernen",
+    "language": "Sprache",
+    "reduceMotion": "Weniger Animation",
+    "sound": "Ton"
+  },
+  "nav": {
+    "learn": "Lernen",
+    "quiz": "Quiz"
+  },
+  "roles": {
+    "S": "Zuspieler",
+    "OPP": "Diagonal",
+    "OH1": "Außen 1",
+    "OH2": "Außen 2",
+    "MB1": "Mitte 1",
+    "MB2": "Mitte 2",
+    "L": "Libero"
+  },
+  "positions": {
+    "1": "Position 1 — hinten rechts (Aufschlag)",
+    "2": "Position 2 — vorne rechts",
+    "3": "Position 3 — vorne Mitte",
+    "4": "Position 4 — vorne links",
+    "5": "Position 5 — hinten links",
+    "6": "Position 6 — hinten Mitte"
+  },
+  "court": {
+    "net": "Netz",
+    "label": "Deine Hälfte von oben. Netz ist oben.",
+    "front": "Vorderreihe",
+    "back": "Hinterreihe",
+    "token": "{{role}} auf Position {{pos}}",
+    "passer": "Annehmer",
+    "slot": "Position {{pos}} wählen",
+    "serviceZone": "Aufschlagzone"
+  },
+  "learn": {
+    "heading": "Rotation erkunden",
+    "rotation": "Rotation {{n}}",
+    "rotationInfo": "Rotation 1: Der Zuspieler steht auf Position 1. Jeder Side-out bringt dich eine Rotation weiter (Zuspieler auf 6, 5, 4, 3, 2).",
+    "sideOut": "Side-out → rotieren",
+    "reset": "Zurück zu Rotation 1",
+    "attackers": "Angreifer in der Vorderreihe",
+    "setterRow": "Zuspieler ist {{row}}",
+    "notes": {
+      "1": "Der Zuspieler schlägt von Position 1 auf. Drei Angreifer vorne — die stärkste Angriffsrotation.",
+      "2": "Der Zuspieler steht vorne rechts am Netz. Nur zwei Angreifer vorne.",
+      "3": "Der Zuspieler steht vorne Mitte und rutscht nach rechts zum Netz. Zwei Angreifer vorne.",
+      "4": "Der Zuspieler steht vorne links und hat den längsten Weg zur Zuspielzone. Zwei Angreifer vorne.",
+      "5": "Der Zuspieler steht hinten links und löst aus der Tiefe zum Netz. Drei Angreifer vorne.",
+      "6": "Der Zuspieler steht hinten Mitte. Drei Angreifer vorne, der Zuspieler läuft durch die Mitte."
+    }
+  },
+  "quiz": {
+    "heading": "Aufstellung üben",
+    "mode": "Übungsmodus",
+    "modes": {
+      "mixed": "Gemischt",
+      "serve": "Aufschlag",
+      "receive": "Annahme"
+    },
+    "phases": {
+      "serve": "Eigener Aufschlag",
+      "receive": "Gegner schlägt auf",
+      "base": "Nach der Annahme"
+    },
+    "rotationLabel": "Rotation {{n}}",
+    "instruction": {
+      "serve": "Dein Team schlägt auf. Zieh alle Spieler in eine erlaubte Aufstellung — Position 1 steht hinter der Grundlinie.",
+      "receive": "Der Gegner schlägt auf. Zieh alle Spieler in eine erlaubte Annahme-Aufstellung.",
+      "base": "Der Ball ist angenommen. Zieh jeden Spieler auf seine Grundposition für den Angriff: Zuspieler zum Ziel am Netz, Angreifer zum Anlauf, hinten den Libero und das Außen."
+    },
+    "legend": {
+      "serve": "Die gestrichelte Fläche hinter der Grundlinie ist die Aufschlagzone. Nur Position 1 darf dort stehen und ist von der Überlappung zu 2 und 6 ausgenommen.",
+      "receive": "Strich unter der Nummer: Annahmespieler (Libero bzw. Hinterreihen-Mitte ohne Libero, und beide Außen). Diagonal und Zuspieler nehmen nicht an, die Vorderreihen-Mitte steht am Netz.",
+      "base": "Sei nicht pixelgenau: Ein Spieler gilt als richtig, wenn er nah genug an seiner Grundposition steht."
+    },
+    "keyboardHint": "Tastatur: Spieler wählen, mit den Pfeiltasten bewegen, mit Enter bestätigen.",
+    "selected": "Gewählt: {{role}}",
+    "submit": "Prüfen",
+    "reset": "Zurücksetzen",
+    "correct": "Richtig",
+    "wrong": "Noch nicht",
+    "explanationOkServe": "Keine Überlappung im Moment des Aufschlags. Position 1 steht hinter der Grundlinie in der Aufschlagzone.",
+    "explanationOkReceive": "Keine Überlappung im Moment des Aufschlags. Der Zuspieler versteckt sich und läuft nach dem Kontakt zum Netz.",
+    "explanationBad": "Das stimmt noch nicht. Die markierten Paare überlappen — der Schatten zeigt ein erlaubtes Beispiel.",
+    "hint": {
+      "serve": "Vorderreihe näher am Netz als die Hinterreihe, links bleibt links von rechts. Der Aufschläger steht hinter der Grundlinie.",
+      "receive": "Vorderspieler näher am Netz als der Spieler direkt hinter ihm, links bleibt links von rechts — in beiden Reihen, auch Position 1. Der Aufschläger-Sonderfall gilt nur beim eigenen Aufschlag.",
+      "base": "Zuspieler rechts am Netz, Vorderreihe an der Angriffslinie (Außen links bzw. am Pin, Mitte in der Mitte, Diagonal rechts), Libero links hinten, hinteres Außen mittig hinten."
+    },
+    "reasons": {
+      "front-behind-back": "Position {{a}} muss näher am Netz stehen als Position {{b}}.",
+      "front-row-order": "In der Vorderreihe muss Position {{a}} links von Position {{b}} stehen.",
+      "back-row-order": "In der Hinterreihe muss Position {{a}} links von Position {{b}} stehen.",
+      "server-not-in-zone": "Position 1 muss hinter der Grundlinie in der Aufschlagzone stehen."
+    },
+    "ghost": "Ein erlaubtes Beispiel (Schatten)",
+    "next": "Nächste Aufgabe",
+    "libero": "Mit Libero spielen",
+    "toBase": "Weiter: Grundposition",
+    "explanationBase": "Richtig: Nach dem Pass läuft der Zuspieler zum Ziel am rechten Netz, die Angreifer gehen an die Angriffslinie zum Anlauf, der Libero steht links hinten.",
+    "explanationBaseBad": "Mindestens ein Spieler steht noch zu weit von seiner Grundposition. Die markierten Spieler korrigieren — der Schatten zeigt die Grundposition.",
+    "setterAt": "Zuspieler auf Position {{pos}}"
+  },
+  "onboarding": {
+    "skip": "Überspringen",
+    "next": "Weiter",
+    "start": "Los",
+    "step1Title": "Die sechs Positionen",
+    "step1Body": "Du siehst deine eigene Hälfte von oben, das Netz ist oben. Position 1 ist hinten rechts und schlägt auf; 4, 3, 2 sind die Vorderreihe.",
+    "step2Title": "Die sechs Rollen",
+    "step2Body": "Im 5-1 gibt es einen Zuspieler, einen Diagonalspieler, zwei Außen und zwei Mitten. Spieler mit derselben Aufgabe stehen immer drei Positionen auseinander.",
+    "step3Title": "Was Rotation bedeutet",
+    "step3Body": "Nach einem Side-out gehen alle eine Position im Uhrzeigersinn weiter: 1 → 6 → 5 → 4 → 3 → 2 → 1. Rotation 1 heißt: Der Zuspieler steht auf Position 1; jeder Side-out ist eine Rotation weiter."
+  },
+  "common": {
+    "front": "in der Vorderreihe",
+    "back": "in der Hinterreihe",
+    "explanation": "Erklärung",
+    "hint": "Tipp"
+  }
+}

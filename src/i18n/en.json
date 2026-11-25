@@ -1,0 +1,126 @@
+{
+  "app": {
+    "title": "Rotation Rally",
+    "tagline": "Learn the 5-1 rotation",
+    "language": "Language",
+    "reduceMotion": "Reduce motion",
+    "sound": "Sound"
+  },
+  "nav": {
+    "learn": "Learn",
+    "quiz": "Quiz"
+  },
+  "roles": {
+    "S": "Setter",
+    "OPP": "Opposite",
+    "OH1": "Outside 1",
+    "OH2": "Outside 2",
+    "MB1": "Middle 1",
+    "MB2": "Middle 2",
+    "L": "Libero"
+  },
+  "positions": {
+    "1": "Position 1 — right back (server)",
+    "2": "Position 2 — right front",
+    "3": "Position 3 — middle front",
+    "4": "Position 4 — left front",
+    "5": "Position 5 — left back",
+    "6": "Position 6 — middle back"
+  },
+  "court": {
+    "net": "Net",
+    "label": "Your half, seen from above. Net at the top.",
+    "front": "Front row",
+    "back": "Back row",
+    "token": "{{role}} in position {{pos}}",
+    "passer": "Passer",
+    "slot": "Choose position {{pos}}",
+    "serviceZone": "Service zone"
+  },
+  "learn": {
+    "heading": "Explore the rotation",
+    "rotation": "Rotation {{n}}",
+    "rotationInfo": "Rotation 1: the setter is in position 1. Each side-out moves you one rotation on (setter in 6, 5, 4, 3, 2).",
+    "sideOut": "Side-out → rotate",
+    "reset": "Back to rotation 1",
+    "attackers": "Front-row attackers",
+    "setterRow": "Setter is {{row}}",
+    "notes": {
+      "1": "Setter serves from position 1. Three front-row attackers — the strongest attack rotation.",
+      "2": "Setter is front right next to the net. Only two front-row attackers.",
+      "3": "Setter is middle front and slides right to the net. Two front-row attackers.",
+      "4": "Setter is front left and has the longest way to the target area. Two front-row attackers.",
+      "5": "Setter is back left, releases to the net from deep. Three front-row attackers.",
+      "6": "Setter is middle back. Three front-row attackers, setter runs through the middle."
+    }
+  },
+  "quiz": {
+    "heading": "Practise formations",
+    "mode": "Practice mode",
+    "modes": {
+      "mixed": "Mixed",
+      "serve": "Serve",
+      "receive": "Receive"
+    },
+    "phases": {
+      "serve": "Your serve",
+      "receive": "Opponent serves",
+      "base": "After the pass"
+    },
+    "rotationLabel": "Rotation {{n}}",
+    "instruction": {
+      "serve": "Your team serves. Drag every player into a legal formation — position 1 stands behind the end line.",
+      "receive": "The opponent serves. Drag every player into a legal serve-receive formation.",
+      "base": "The ball is passed. Drag every player to their base position for the attack: setter to the target at the net, hitters to their approach spots, libero and back-row outside behind."
+    },
+    "legend": {
+      "serve": "The dashed area behind the end line is the service zone. Only position 1 may stand there and is exempt from overlap with 2 and 6.",
+      "receive": "Line under the number: passers (libero, or the back-row middle without one, and both outsides). The opposite and the setter do not pass; a front-row middle stays at the net.",
+      "base": "No need to be pixel-perfect: a player counts as correct when close enough to the base position."
+    },
+    "keyboardHint": "Keyboard: select a player, move with the arrow keys, confirm with Enter.",
+    "selected": "Selected: {{role}}",
+    "submit": "Check",
+    "reset": "Reset",
+    "correct": "Correct",
+    "wrong": "Not yet",
+    "explanationOkServe": "No overlap at the moment of the serve. Position 1 stands behind the end line in the service zone.",
+    "explanationOkReceive": "No overlap at the moment of the serve. The setter hides and runs to the net after contact.",
+    "explanationBad": "Not quite. The marked pairs overlap — the shadow shows a legal example.",
+    "hint": {
+      "serve": "Front row closer to the net than the back row, left stays left of right. The server stands behind the end line.",
+      "receive": "A front-row player must be closer to the net than the player directly behind, and left stays left of right — in both rows, including position 1. The server exception applies only when your own team serves.",
+      "base": "Setter right-side net, front row on the attack line (outside on the left pin, middle in the centre, opposite on the right), libero left back, back-row outside middle back."
+    },
+    "reasons": {
+      "front-behind-back": "Position {{a}} must be closer to the net than position {{b}}.",
+      "front-row-order": "In the front row, position {{a}} must stand left of position {{b}}.",
+      "back-row-order": "In the back row, position {{a}} must stand left of position {{b}}.",
+      "server-not-in-zone": "Position 1 must stand behind the end line in the service zone."
+    },
+    "ghost": "One legal example (shadow)",
+    "next": "Next task",
+    "libero": "Play with a libero",
+    "toBase": "Next: base position",
+    "explanationBase": "Correct: after the pass the setter runs to the target at the right-side net, the hitters step to the attack line for their approach, the libero stands left back.",
+    "explanationBaseBad": "At least one player is still too far from their base position. Fix the marked players — the shadow shows the base position.",
+    "setterAt": "Setter in position {{pos}}"
+  },
+  "onboarding": {
+    "skip": "Skip",
+    "next": "Next",
+    "start": "Start",
+    "step1Title": "The six positions",
+    "step1Body": "You look at your own half from above, the net is at the top. Position 1 is right back and serves; 4, 3, 2 are the front row.",
+    "step2Title": "The six roles",
+    "step2Body": "In the 5-1 there is one setter, one opposite, two outsides and two middles. Players with the same job always stand three positions apart.",
+    "step3Title": "What rotation means",
+    "step3Body": "After a side-out everyone moves one position clockwise: 1 → 6 → 5 → 4 → 3 → 2 → 1. Rotation 1 means the setter is in position 1; each side-out is the next rotation."
+  },
+  "common": {
+    "front": "front row",
+    "back": "back row",
+    "explanation": "Explanation",
+    "hint": "Hint"
+  }
+}

@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { useTranslation } from "react-i18next";
+import { I18nextProvider } from "react-i18next";
 
-import { detectLanguage, type Language } from "@/i18n";
+import { detectLanguage, translators, type Language } from "@/i18n";
 import {
   DEFAULT_SETTINGS,
   loadSettings,
@@ -23,23 +23,20 @@ interface SettingsContextValue extends Settings {
 const SettingsContext = createContext<SettingsContextValue | null>(null);
 
 export function SettingsProvider({ children }: { children: ReactNode }) {
-  const { i18n } = useTranslation();
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [language, setLanguageState] = useState<Language>("en");
   const [prefersReduced, setPrefersReduced] = useState(false);
 
   useEffect(() => {
     setSettings(loadSettings());
-    const detected = detectLanguage();
-    setLanguageState(detected);
-    void i18n.changeLanguage(detected);
+    setLanguageState(detectLanguage());
 
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
     setPrefersReduced(mq.matches);
     const onChange = () => setPrefersReduced(mq.matches);
     mq.addEventListener("change", onChange);
     return () => mq.removeEventListener("change", onChange);
-  }, [i18n]);
+  }, []);
 
   const value = useMemo<SettingsContextValue>(
     () => ({
@@ -49,7 +46,6 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       setLanguage: (lang) => {
         setLanguageState(lang);
         saveLanguage(lang);
-        void i18n.changeLanguage(lang);
       },
       toggleReduceMotion: () =>
         setSettings((s) => {
@@ -70,10 +66,14 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
           return next;
         }),
     }),
-    [settings, language, prefersReduced, i18n],
+    [settings, language, prefersReduced],
   );
 
-  return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>;
+  return (
+    <SettingsContext.Provider value={value}>
+      <I18nextProvider i18n={translators[language]}>{children}</I18nextProvider>
+    </SettingsContext.Provider>
+  );
 }
 
 export function useSettings(): SettingsContextValue {

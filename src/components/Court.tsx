@@ -7,8 +7,6 @@ interface CourtProps {
   children: ReactNode;
   /** draw diagonal speed lines while players move */
   motionLines?: boolean;
-  /** show the service zone behind the end line */
-  serviceZone?: boolean;
   className?: string;
 }
 
@@ -18,7 +16,7 @@ interface CourtProps {
  * so players with x < 0 or x > 1 stand in the run-out zone beside the sidelines.
  */
 export const Court = forwardRef<HTMLDivElement, CourtProps>(function Court(
-  { children, motionLines, serviceZone, className },
+  { children, motionLines, className },
   ref,
 ) {
   const { t } = useTranslation();
@@ -42,7 +40,7 @@ export const Court = forwardRef<HTMLDivElement, CourtProps>(function Court(
         />
       </div>
 
-      <div className={cn("px-[14%]", serviceZone ? "pb-[20%]" : "pb-[8%]")}>
+      <div className="px-[14%] pb-[8%]">
         <div
           ref={ref}
           role="group"
@@ -53,14 +51,6 @@ export const Court = forwardRef<HTMLDivElement, CourtProps>(function Court(
           <div className="pointer-events-none absolute left-0 top-1/3 h-[3px] w-full bg-court-line" />
           {motionLines && (
             <div className="speed-lines pointer-events-none absolute inset-0 animate-[fade-in_0.2s_ease-out]" />
-          )}
-          {serviceZone && (
-            <div
-              className="pointer-events-none absolute inset-x-0 top-full z-0 flex h-[20%] items-end justify-center pb-1 text-[0.7rem] font-medium text-ink/60"
-              aria-hidden
-            >
-              {t("court.serviceZone")}
-            </div>
           )}
           {children}
         </div>

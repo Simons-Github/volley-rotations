@@ -20,7 +20,7 @@ export interface Coord {
 export type Coords = Record<Position, Coord>;
 
 export type OverlapReason =
-  "front-behind-back" | "front-row-order" | "back-row-order" | "server-not-in-zone";
+  "front-behind-back" | "front-row-order" | "back-row-order" | "outside-court";
 
 export interface OverlapViolation {
   pair: [Position, Position];

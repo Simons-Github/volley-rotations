@@ -91,17 +91,14 @@ export function lineupForRotation(rotation: Position): Lineup {
   return lineup;
 }
 
-export type Phase = "serve" | "receive";
-
 /**
- * Lineup as it stands on court. The libero replaces the back-row middle, except
- * while that middle is about to serve from position 1.
+ * Lineup as it stands on court to receive serve: the libero replaces the
+ * back-row middle.
  */
-export function lineupForPhase(rotation: Position, phase: Phase, libero = true): Lineup {
+export function receiveLineup(rotation: Position, libero = true): Lineup {
   const lineup = { ...lineupForRotation(rotation) };
   if (!libero) return lineup;
   for (const pos of BACK_ROW) {
-    if (phase === "serve" && pos === 1) continue;
     if (lineup[pos] === "MB1" || lineup[pos] === "MB2") lineup[pos] = "L";
   }
   return lineup;
@@ -130,41 +127,25 @@ export function isPasserAt(lineup: Lineup, pos: Position): boolean {
   return (role === "MB1" || role === "MB2") && !isFrontRow(pos);
 }
 
-/** Position 1 (the server) is not overlapped with 2 or 6 while that team is serving. */
-const SERVER_EXEMPT_PAIRS: ReadonlyArray<readonly [Position, Position]> = [
-  [2, 1],
-  [6, 1],
-];
-
-function exemptWhenServing(a: Position, b: Position, serverExempt: boolean): boolean {
-  if (!serverExempt) return false;
-  return SERVER_EXEMPT_PAIRS.some(
-    ([left, right]) => (a === left && b === right) || (a === right && b === left),
-  );
-}
-
 /**
- * Overlap at the moment of serve contact. Adjacent pairs only — no diagonals.
- * The receiving team checks all six players. Pass `{ serverExempt: true }` only
- * for the serving team's position 1, who is exempt until contact.
- * The service zone itself is `validateServeFormation`, not this function.
+ * Rotational order at the service hit (FIVB Official Volleyball Rules 2025-2028,
+ * rule 7.4). It binds the receiving team only; the serving team may take any
+ * position, so there is no check for it. Adjacent pairs only, no diagonals.
+ * Being level with the corresponding neighbour is legal (7.4.3.1 and 7.4.3.2), so
+ * a pair is a violation only when it is strictly the wrong way round. Each player
+ * is a single point; the rule's judgement by feet is not modelled.
  */
-export function validateOverlap(
-  coords: Coords,
-  options?: { serverExempt?: boolean },
-): OverlapViolation[] {
-  const serverExempt = options?.serverExempt ?? false;
+export function validateOverlap(coords: Coords): OverlapViolation[] {
   const violations: OverlapViolation[] = [];
 
-  // Front-row player must be closer to the net than the back-row player behind.
+  // Front-row player must not be further from the net than the back-row player behind.
   const columns: Array<[Position, Position]> = [
     [2, 1],
     [3, 6],
     [4, 5],
   ];
   for (const [front, back] of columns) {
-    if (exemptWhenServing(front, back, serverExempt)) continue;
-    if (coords[front].y >= coords[back].y) {
+    if (coords[front].y > coords[back].y) {
       violations.push({ pair: [front, back], reason: "front-behind-back" });
     }
   }
@@ -175,7 +156,7 @@ export function validateOverlap(
     [3, 2],
   ];
   for (const [left, right] of frontOrder) {
-    if (coords[left].x >= coords[right].x) {
+    if (coords[left].x > coords[right].x) {
       violations.push({ pair: [left, right], reason: "front-row-order" });
     }
   }
@@ -185,8 +166,7 @@ export function validateOverlap(
     [6, 1],
   ];
   for (const [left, right] of backOrder) {
-    if (exemptWhenServing(left, right, serverExempt)) continue;
-    if (coords[left].x >= coords[right].x) {
+    if (coords[left].x > coords[right].x) {
       violations.push({ pair: [left, right], reason: "back-row-order" });
     }
   }
@@ -194,28 +174,29 @@ export function validateOverlap(
   return violations;
 }
 
-/** End line is y = 1. The server must be strictly behind it, between the sidelines. */
-export function isInServiceZone(coord: Coord): boolean {
-  return coord.y > 1 && coord.x >= 0 && coord.x <= 1;
-}
-
 /**
- * Legal serve at contact: the other five keep overlap, and position 1 stands
- * in the service zone. Overlap exemption alone does not make the serve legal.
+ * At the service hit each player except the server must stand within the own
+ * court (rule 7.4). The lines belong to the court. This is for the receiving
+ * team, which has no server, so all six are checked. `pair` repeats the one
+ * position concerned.
  */
-export function validateServeFormation(coords: Coords): OverlapViolation[] {
-  const violations = validateOverlap(coords, { serverExempt: true });
-  if (!isInServiceZone(coords[1])) {
-    violations.push({ pair: [1, 1], reason: "server-not-in-zone" });
-  }
-  return violations;
+export function validateInsideCourt(coords: Coords): OverlapViolation[] {
+  return POSITIONS.filter((pos) => {
+    const { x, y } = coords[pos];
+    return x < 0 || x > 1 || y < 0 || y > 1;
+  }).map((pos) => ({ pair: [pos, pos], reason: "outside-court" }));
 }
 
-/** Direct overlap neighbour of one position. Equality counts as a violation, same as `validateOverlap`. */
+/** Everything rule 7.4 asks of the receiving team at the service hit. */
+export function validateReceiveFormation(coords: Coords): OverlapViolation[] {
+  return [...validateOverlap(coords), ...validateInsideCourt(coords)];
+}
+
+/** Direct overlap neighbour of one position. Being level is legal, same as `validateOverlap`. */
 export interface OverlapBound {
   other: Position;
   axis: "x" | "y";
-  /** This player must stay strictly below (`max`) or strictly above (`min`) `value`. Net is y = 0. */
+  /** This player must stay at or below (`max`) or at or above (`min`) `value`. Net is y = 0. */
   bound: "min" | "max";
   value: number;
   violated: boolean;
@@ -256,29 +237,23 @@ const OVERLAP_NEIGHBORS: Record<
 /**
  * Legal edges for one player, taken from the direct neighbours. `at` is the position
  * being tested (the live drag preview); neighbours stay where `coords` puts them.
- * Pass `{ serverExempt: true }` to drop the server's pairs, matching `validateOverlap`.
  */
 export function overlapBounds(
   pos: Position,
   coords: Coords,
   at: Coord = coords[pos],
-  options?: { serverExempt?: boolean },
 ): OverlapBound[] {
-  const serverExempt = options?.serverExempt ?? false;
-  return OVERLAP_NEIGHBORS[pos]
-    .filter((neighbor) => !exemptWhenServing(pos, neighbor.other, serverExempt))
-    .map((neighbor) => {
-      const value = coords[neighbor.other][neighbor.axis];
-      const violated =
-        neighbor.bound === "max" ? at[neighbor.axis] >= value : at[neighbor.axis] <= value;
-      return { ...neighbor, value, violated };
-    });
+  return OVERLAP_NEIGHBORS[pos].map((neighbor) => {
+    const value = coords[neighbor.other][neighbor.axis];
+    const violated =
+      neighbor.bound === "max" ? at[neighbor.axis] > value : at[neighbor.axis] < value;
+    return { ...neighbor, value, violated };
+  });
 }
 
 interface FormationEntry {
   receive: Record<string, Coord>;
   base: Record<string, Coord>;
-  serve: Record<string, Coord>;
 }
 
 function toCoords(raw: Record<string, Coord>): Coords {
@@ -302,20 +277,6 @@ export const RECEIVE_FORMATIONS: Record<Position, Coords> = {
   4: toCoords(rawFormations["4"]!.receive),
   5: toCoords(rawFormations["5"]!.receive),
   6: toCoords(rawFormations["6"]!.receive),
-};
-
-/**
- * Serving formation at contact. Position 1 is in the service zone (y > 1).
- * Overlap of the other five is legal with `{ serverExempt: true }`;
- * `validateServeFormation` also requires the service zone.
- */
-export const SERVE_FORMATIONS: Record<Position, Coords> = {
-  1: toCoords(rawFormations["1"]!.serve),
-  2: toCoords(rawFormations["2"]!.serve),
-  3: toCoords(rawFormations["3"]!.serve),
-  4: toCoords(rawFormations["4"]!.serve),
-  5: toCoords(rawFormations["5"]!.serve),
-  6: toCoords(rawFormations["6"]!.serve),
 };
 
 /**

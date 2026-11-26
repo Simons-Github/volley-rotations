@@ -34,8 +34,7 @@
     "back": "Hinterreihe",
     "token": "{{role}} auf Position {{pos}}",
     "passer": "Annehmer",
-    "slot": "Position {{pos}} wählen",
-    "serviceZone": "Aufschlagzone"
+    "slot": "Position {{pos}} wählen"
   },
   "learn": {
     "heading": "Rotation erkunden",
@@ -56,25 +55,16 @@
   },
   "quiz": {
     "heading": "Aufstellung üben",
-    "mode": "Übungsmodus",
-    "modes": {
-      "mixed": "Gemischt",
-      "serve": "Aufschlag",
-      "receive": "Annahme"
-    },
     "phases": {
-      "serve": "Eigener Aufschlag",
       "receive": "Gegner schlägt auf",
       "base": "Nach der Annahme"
     },
     "rotationLabel": "Rotation {{n}}",
     "instruction": {
-      "serve": "Dein Team schlägt auf. Zieh alle Spieler in eine erlaubte Aufstellung — Position 1 steht hinter der Grundlinie.",
       "receive": "Der Gegner schlägt auf. Zieh alle Spieler in eine erlaubte Annahme-Aufstellung.",
       "base": "Der Ball ist angenommen. Zieh jeden Spieler auf seine Grundposition für den Angriff: Zuspieler zum Ziel am Netz, Angreifer zum Anlauf, hinten den Libero und das Außen."
     },
     "legend": {
-      "serve": "Die gestrichelte Fläche hinter der Grundlinie ist die Aufschlagzone. Nur Position 1 darf dort stehen und ist von der Überlappung zu 2 und 6 ausgenommen.",
       "receive": "Strich unter der Nummer: Annahmespieler (Libero bzw. Hinterreihen-Mitte ohne Libero, und beide Außen). Diagonal und Zuspieler nehmen nicht an, die Vorderreihen-Mitte steht am Netz.",
       "base": "Sei nicht pixelgenau: Ein Spieler gilt als richtig, wenn er nah genug an seiner Grundposition steht."
     },
@@ -84,19 +74,17 @@
     "reset": "Zurücksetzen",
     "correct": "Richtig",
     "wrong": "Noch nicht",
-    "explanationOkServe": "Keine Überlappung im Moment des Aufschlags. Position 1 steht hinter der Grundlinie in der Aufschlagzone.",
     "explanationOkReceive": "Keine Überlappung im Moment des Aufschlags. Der Zuspieler versteckt sich und läuft nach dem Kontakt zum Netz.",
-    "explanationBad": "Das stimmt noch nicht. Die markierten Paare überlappen — der Schatten zeigt ein erlaubtes Beispiel.",
+    "explanationBad": "Das stimmt noch nicht. Prüfe die markierten Spieler — der Schatten zeigt ein erlaubtes Beispiel.",
     "hint": {
-      "serve": "Vorderreihe näher am Netz als die Hinterreihe, links bleibt links von rechts. Der Aufschläger steht hinter der Grundlinie.",
-      "receive": "Vorderspieler näher am Netz als der Spieler direkt hinter ihm, links bleibt links von rechts — in beiden Reihen, auch Position 1. Der Aufschläger-Sonderfall gilt nur beim eigenen Aufschlag.",
+      "receive": "Kein Hinterspieler darf näher am Netz stehen als der zugehörige Vorderspieler, und in einer Reihe darf niemand seinen Nachbarn zur falschen Seite überholen. Gleiche Höhe ist erlaubt. Diese Ordnung muss nur das annehmende Team einhalten. Alle stehen im Spielfeld, die Linien zählen dazu.",
       "base": "Zuspieler rechts am Netz, Vorderreihe an der Angriffslinie (Außen links bzw. am Pin, Mitte in der Mitte, Diagonal rechts), Libero links hinten, hinteres Außen mittig hinten."
     },
     "reasons": {
-      "front-behind-back": "Position {{a}} muss näher am Netz stehen als Position {{b}}.",
-      "front-row-order": "In der Vorderreihe muss Position {{a}} links von Position {{b}} stehen.",
-      "back-row-order": "In der Hinterreihe muss Position {{a}} links von Position {{b}} stehen.",
-      "server-not-in-zone": "Position 1 muss hinter der Grundlinie in der Aufschlagzone stehen."
+      "front-behind-back": "Position {{a}} darf nicht weiter vom Netz entfernt stehen als Position {{b}}.",
+      "front-row-order": "In der Vorderreihe darf Position {{a}} nicht rechts von Position {{b}} stehen.",
+      "back-row-order": "In der Hinterreihe darf Position {{a}} nicht rechts von Position {{b}} stehen.",
+      "outside-court": "Position {{a}} muss innerhalb des Spielfelds stehen."
     },
     "ghost": "Ein erlaubtes Beispiel (Schatten)",
     "next": "Nächste Aufgabe",

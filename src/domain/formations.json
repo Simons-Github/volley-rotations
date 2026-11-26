@@ -1,5 +1,5 @@
 {
-  "_comment": "Positions for a 5-1 with libero, taken from the animated formation at https://learnvolley.com/formation5-1 (opposite does not pass; libero replaces the back-row middle, but the middle serves from position 1). receive = 'In position' before the opponent serves; serve = 'In position' before our serve (same shape in every rotation, server at y > 1); base = positions after the pass, at the start of the attack approach (some hitters wait just outside the sidelines, x < 0 or x > 1). Keys are court positions 1-6, x 0=left 1=right, y 0=net 1=back line. Rotation N = setter in position N. Display numbering counts side-outs from setter in 1.",
+  "_comment": "Positions for a 5-1 with libero, taken from the animated formation at https://learnvolley.com/formation5-1 (opposite does not pass; libero replaces the back-row middle). receive = 'In position' before the opponent serves; base = positions after the pass, at the start of the attack approach (some hitters wait just outside the sidelines, x < 0 or x > 1). Keys are court positions 1-6, x 0=left 1=right, y 0=net 1=back line. Rotation N = setter in position N. Display numbering counts side-outs from setter in 1.",
   "rotations": {
     "1": {
       "receive": {
@@ -51,32 +51,6 @@
         },
         "6": {
           "x": 0.237,
-          "y": 0.591
-        }
-      },
-      "serve": {
-        "1": {
-          "x": 0.515,
-          "y": 1.063
-        },
-        "2": {
-          "x": 0.626,
-          "y": 0.063
-        },
-        "3": {
-          "x": 0.515,
-          "y": 0.063
-        },
-        "4": {
-          "x": 0.404,
-          "y": 0.063
-        },
-        "5": {
-          "x": 0.46,
-          "y": 0.591
-        },
-        "6": {
-          "x": 0.571,
           "y": 0.591
         }
       }
@@ -133,32 +107,6 @@
           "x": 0.515,
           "y": 0.813
         }
-      },
-      "serve": {
-        "1": {
-          "x": 0.515,
-          "y": 1.063
-        },
-        "2": {
-          "x": 0.626,
-          "y": 0.063
-        },
-        "3": {
-          "x": 0.515,
-          "y": 0.063
-        },
-        "4": {
-          "x": 0.404,
-          "y": 0.063
-        },
-        "5": {
-          "x": 0.46,
-          "y": 0.591
-        },
-        "6": {
-          "x": 0.571,
-          "y": 0.591
-        }
       }
     },
     "3": {
@@ -213,32 +161,6 @@
           "x": 0.932,
           "y": 0.535
         }
-      },
-      "serve": {
-        "1": {
-          "x": 0.515,
-          "y": 1.063
-        },
-        "2": {
-          "x": 0.626,
-          "y": 0.063
-        },
-        "3": {
-          "x": 0.515,
-          "y": 0.063
-        },
-        "4": {
-          "x": 0.404,
-          "y": 0.063
-        },
-        "5": {
-          "x": 0.46,
-          "y": 0.591
-        },
-        "6": {
-          "x": 0.571,
-          "y": 0.591
-        }
       }
     },
     "4": {
@@ -291,32 +213,6 @@
         },
         "6": {
           "x": 0.237,
-          "y": 0.591
-        }
-      },
-      "serve": {
-        "1": {
-          "x": 0.515,
-          "y": 1.063
-        },
-        "2": {
-          "x": 0.626,
-          "y": 0.063
-        },
-        "3": {
-          "x": 0.515,
-          "y": 0.063
-        },
-        "4": {
-          "x": 0.404,
-          "y": 0.063
-        },
-        "5": {
-          "x": 0.46,
-          "y": 0.591
-        },
-        "6": {
-          "x": 0.571,
           "y": 0.591
         }
       }
@@ -373,32 +269,6 @@
           "x": 0.515,
           "y": 0.813
         }
-      },
-      "serve": {
-        "1": {
-          "x": 0.515,
-          "y": 1.063
-        },
-        "2": {
-          "x": 0.626,
-          "y": 0.063
-        },
-        "3": {
-          "x": 0.515,
-          "y": 0.063
-        },
-        "4": {
-          "x": 0.404,
-          "y": 0.063
-        },
-        "5": {
-          "x": 0.46,
-          "y": 0.591
-        },
-        "6": {
-          "x": 0.571,
-          "y": 0.591
-        }
       }
     },
     "6": {
@@ -452,32 +322,6 @@
         "6": {
           "x": 0.626,
           "y": 0.063
-        }
-      },
-      "serve": {
-        "1": {
-          "x": 0.515,
-          "y": 1.063
-        },
-        "2": {
-          "x": 0.626,
-          "y": 0.063
-        },
-        "3": {
-          "x": 0.515,
-          "y": 0.063
-        },
-        "4": {
-          "x": 0.404,
-          "y": 0.063
-        },
-        "5": {
-          "x": 0.46,
-          "y": 0.591
-        },
-        "6": {
-          "x": 0.571,
-          "y": 0.591
         }
       }
     }

@@ -19,21 +19,17 @@ import {
   BASE_FORMATIONS,
   BASE_SLOTS,
   RECEIVE_FORMATIONS,
-  SERVE_FORMATIONS,
   getRotationNumber,
   isFrontRow,
   isPasserAt,
-  lineupForPhase,
+  receiveLineup,
   rotationNumber,
   validateBasePositions,
-  validateOverlap,
-  validateServeFormation,
-  type Phase,
+  validateReceiveFormation,
 } from "@/domain/rotation";
 import { POSITIONS, type Coord, type Coords, type Position, type Role } from "@/domain/types";
 import { useSettings } from "@/lib/settings";
 import { recordResult } from "@/lib/storage";
-import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/quiz")({
   head: () => ({
@@ -42,12 +38,12 @@ export const Route = createFileRoute("/quiz")({
       {
         name: "description",
         content:
-          "Drag your players into a legal serving or serve-receive formation for any of the six 5-1 rotations.",
+          "Drag your players into a legal serve-receive formation for any of the six 5-1 rotations.",
       },
       { property: "og:title", content: "Quiz — 5-1 Rotation Rally" },
       {
         property: "og:description",
-        content: "Learn serve and serve-receive formations of the 5-1 system.",
+        content: "Learn the serve-receive formations of the 5-1 system.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -56,25 +52,20 @@ export const Route = createFileRoute("/quiz")({
   component: QuizPage,
 });
 
-type Mode = "mixed" | Phase;
-
 const COURT_MIN = 0.06;
 const COURT_MAX = 0.94;
 /** Hitters may wait just outside the sidelines before their approach. */
 const SIDE_MIN = -0.14;
 const SIDE_MAX = 1.14;
-/** The server may stand anywhere behind the end line, up to this depth. */
-const SERVICE_MAX_Y = 1.12;
 
 const randomRotation = () => (Math.floor(Math.random() * 6) + 1) as Position;
 
-function clampTo(phase: Phase, pos: Position, x: number, y: number, wide = false): Coord {
-  const maxY = phase === "serve" && pos === 1 ? SERVICE_MAX_Y : COURT_MAX;
+function clampTo(x: number, y: number, wide = false): Coord {
   return {
     x: wide
       ? Math.min(SIDE_MAX, Math.max(SIDE_MIN, x))
       : Math.min(COURT_MAX, Math.max(COURT_MIN, x)),
-    y: Math.min(maxY, Math.max(COURT_MIN, y)),
+    y: Math.min(COURT_MAX, Math.max(COURT_MIN, y)),
   };
 }
 
@@ -83,9 +74,7 @@ function QuizPage() {
   const { libero, toggleLibero } = useSettings();
   const courtRef = useRef<HTMLDivElement | null>(null);
 
-  const [mode, setMode] = useState<Mode>("mixed");
   const [rotation, setRotation] = useState<Position>(1);
-  const [phase, setPhase] = useState<Phase>("receive");
   const [coords, setCoords] = useState<Coords>(BASE_SLOTS);
   const [selected, setSelected] = useState<Position | null>(null);
   const [submitted, setSubmitted] = useState(false);
@@ -94,10 +83,9 @@ function QuizPage() {
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
 
-  const next = useCallback((nextMode: Mode) => {
+  const next = useCallback(() => {
     const nextRotation = randomRotation();
     setRotation(nextRotation);
-    setPhase(nextMode === "mixed" ? (Math.random() < 0.5 ? "serve" : "receive") : nextMode);
     setCoords(BASE_FORMATIONS[nextRotation]);
     setSubmitted(false);
     setStage("formation");
@@ -105,17 +93,12 @@ function QuizPage() {
   }, []);
 
   useEffect(() => {
-    next("mixed");
+    next();
   }, [next]);
 
-  const changeMode = (m: Mode) => {
-    setMode(m);
-    next(m);
-  };
-
-  const lineup = lineupForPhase(rotation, phase, libero);
+  const lineup = receiveLineup(rotation, libero);
   const inBase = stage === "base";
-  const violations = phase === "serve" ? validateServeFormation(coords) : validateOverlap(coords);
+  const violations = validateReceiveFormation(coords);
   const baseWrong = inBase ? validateBasePositions(coords, rotation) : [];
   const legal = inBase ? baseWrong.length === 0 : violations.length === 0;
   const locked = submitted && legal;
@@ -123,17 +106,13 @@ function QuizPage() {
   const violating = new Set<Position>(
     showErrors ? (inBase ? baseWrong : violations.flatMap((v) => v.pair)) : [],
   );
-  const solution = inBase
-    ? BASE_FORMATIONS[rotation]
-    : phase === "serve"
-      ? SERVE_FORMATIONS[rotation]
-      : RECEIVE_FORMATIONS[rotation];
-  const isPasser = (pos: Position) => phase === "receive" && !inBase && isPasserAt(lineup, pos);
-  const shownPhase = inBase ? "base" : phase;
+  const solution = inBase ? BASE_FORMATIONS[rotation] : RECEIVE_FORMATIONS[rotation];
+  const isPasser = (pos: Position) => !inBase && isPasserAt(lineup, pos);
+  const shownPhase = inBase ? "base" : "receive";
 
   const moveBy = (pos: Position, dx: number, dy: number) => {
     if (locked) return;
-    setCoords((c) => ({ ...c, [pos]: clampTo(phase, pos, c[pos].x + dx, c[pos].y + dy, inBase) }));
+    setCoords((c) => ({ ...c, [pos]: clampTo(c[pos].x + dx, c[pos].y + dy, inBase) }));
   };
 
   const onDragStart = ({ active }: DragStartEvent) => {
@@ -160,7 +139,7 @@ function QuizPage() {
     if (locked) return;
     setSubmitted(true);
     recordResult({
-      mode: inBase ? "base" : phase,
+      mode: shownPhase,
       correct: legal,
       at: Date.now(),
       detail: { rotation, violations: inBase ? baseWrong.length : violations.length },
@@ -169,11 +148,7 @@ function QuizPage() {
 
   const explanation = !legal
     ? t(inBase ? "quiz.explanationBaseBad" : "quiz.explanationBad")
-    : inBase
-      ? t("quiz.explanationBase")
-      : phase === "serve"
-        ? t("quiz.explanationOkServe")
-        : t("quiz.explanationOkReceive");
+    : t(inBase ? "quiz.explanationBase" : "quiz.explanationOkReceive");
 
   const startBase = () => {
     setCoords(RECEIVE_FORMATIONS[rotation]);
@@ -224,7 +199,7 @@ function QuizPage() {
             onDragEnd={onDragEnd}
             onDragCancel={onDragCancel}
           >
-            <Court ref={courtRef} serviceZone={phase === "serve" && !inBase}>
+            <Court ref={courtRef}>
               {POSITIONS.map((p) => (
                 <span
                   key={`slot-${p}`}
@@ -276,39 +251,15 @@ function QuizPage() {
 
         <div className="flex flex-col gap-4">
           <div className="panel flex flex-col gap-4 p-4">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div
-                className="flex overflow-hidden rounded-lg border border-border"
-                role="group"
-                aria-label={t("quiz.mode")}
-              >
-                {(["mixed", "serve", "receive"] as const).map((m) => (
-                  <button
-                    key={m}
-                    type="button"
-                    aria-pressed={mode === m}
-                    onClick={() => changeMode(m)}
-                    className={cn(
-                      "tap-target px-3 text-sm font-bold",
-                      mode === m
-                        ? "bg-ink text-court-line"
-                        : "bg-card text-muted-foreground hover:text-foreground",
-                    )}
-                  >
-                    {t(`quiz.modes.${m}`)}
-                  </button>
-                ))}
-              </div>
-              <label className="flex cursor-pointer items-center gap-2 text-sm font-medium text-foreground">
-                <input
-                  type="checkbox"
-                  checked={libero}
-                  onChange={toggleLibero}
-                  className="h-5 w-5 accent-ink"
-                />
-                {t("quiz.libero")}
-              </label>
-            </div>
+            <label className="tap-target flex cursor-pointer items-center gap-2 text-sm font-medium text-foreground">
+              <input
+                type="checkbox"
+                checked={libero}
+                onChange={toggleLibero}
+                className="h-5 w-5 accent-ink"
+              />
+              {t("quiz.libero")}
+            </label>
 
             <p className="text-sm leading-relaxed text-muted-foreground">
               {t(`quiz.legend.${shownPhase}`)}
@@ -345,15 +296,15 @@ function QuizPage() {
               hint={t(`quiz.hint.${shownPhase}`)}
               action={
                 <div className="flex flex-wrap gap-2">
-                  {legal && phase === "receive" && !inBase && (
+                  {legal && !inBase && (
                     <button type="button" onClick={startBase} className={primaryBtn}>
                       {t("quiz.toBase")}
                     </button>
                   )}
                   <button
                     type="button"
-                    onClick={() => next(mode)}
-                    className={legal && phase === "receive" && !inBase ? quietBtn : primaryBtn}
+                    onClick={next}
+                    className={legal && !inBase ? quietBtn : primaryBtn}
                   >
                     {t("quiz.next")}
                   </button>

@@ -4,25 +4,24 @@ import {
   BASE_FORMATIONS,
   BASE_SLOTS,
   RECEIVE_FORMATIONS,
-  SERVE_FORMATIONS,
   ROTATION_1_LINEUP,
   getRotationNumber,
   isFrontRow,
-  isInServiceZone,
   isPasserAt,
   isReceivePasser,
-  lineupForPhase,
   lineupForRotation,
   overlapBounds,
   positionOfRole,
+  receiveLineup,
   rotate,
   rotateTimes,
   rotationNumber,
   setterPositionForRotation,
   shouldRotate,
   validateBasePositions,
+  validateInsideCourt,
   validateOverlap,
-  validateServeFormation,
+  validateReceiveFormation,
 } from "./rotation";
 import { POSITIONS, type Coords, type Position } from "./types";
 
@@ -140,38 +139,38 @@ describe("validateOverlap", () => {
     });
   });
 
-  it("exempts the server in position 1 only while that team is serving", () => {
-    const serverDeep = { ...BASE_SLOTS, 1: { x: 0.9, y: 0.05 } };
-    expect(validateOverlap(serverDeep, { serverExempt: true })).toEqual([]);
-  });
-
-  it("accepts every model serve formation when the server is exempt and in the zone", () => {
-    for (const r of POSITIONS) {
-      expect(validateOverlap(SERVE_FORMATIONS[r], { serverExempt: true })).toEqual([]);
-      expect(validateServeFormation(SERVE_FORMATIONS[r])).toEqual([]);
-      expect(isInServiceZone(SERVE_FORMATIONS[r][1])).toBe(true);
+  it("allows a player to be level with the player in front or behind", () => {
+    const columns: Array<[Position, Position]> = [
+      [2, 1],
+      [3, 6],
+      [4, 5],
+    ];
+    for (const [front, back] of columns) {
+      const level = { ...BASE_SLOTS, [front]: { x: BASE_SLOTS[front].x, y: BASE_SLOTS[back].y } };
+      expect(validateOverlap(level)).toEqual([]);
+      const past = {
+        ...BASE_SLOTS,
+        [front]: { x: BASE_SLOTS[front].x, y: BASE_SLOTS[back].y + 0.001 },
+      };
+      expect(validateOverlap(past)).toEqual([{ pair: [front, back], reason: "front-behind-back" }]);
     }
   });
 
-  it("rejects a server who is still on the court", () => {
-    const serverAtTheNet = { ...BASE_SLOTS, 1: { x: 0.9, y: 0.05 } };
-    expect(validateOverlap(serverAtTheNet, { serverExempt: true })).toEqual([]);
-    expect(validateServeFormation(serverAtTheNet)).toContainEqual({
-      pair: [1, 1],
-      reason: "server-not-in-zone",
-    });
-    expect(validateServeFormation(BASE_SLOTS)).toContainEqual({
-      pair: [1, 1],
-      reason: "server-not-in-zone",
-    });
-  });
-
-  it("needs the server exemption: the server stands left of position 6 on every serve", () => {
-    for (const r of POSITIONS) {
-      expect(validateOverlap(SERVE_FORMATIONS[r])).toContainEqual({
-        pair: [6, 1],
-        reason: "back-row-order",
-      });
+  it("allows a player to be level with the neighbour in the same row", () => {
+    const rows = [
+      { left: 4, right: 3, reason: "front-row-order" },
+      { left: 3, right: 2, reason: "front-row-order" },
+      { left: 5, right: 6, reason: "back-row-order" },
+      { left: 6, right: 1, reason: "back-row-order" },
+    ] as const;
+    for (const { left, right, reason } of rows) {
+      const level = { ...BASE_SLOTS, [left]: { x: BASE_SLOTS[right].x, y: BASE_SLOTS[left].y } };
+      expect(validateOverlap(level)).toEqual([]);
+      const past = {
+        ...BASE_SLOTS,
+        [left]: { x: BASE_SLOTS[right].x + 0.001, y: BASE_SLOTS[left].y },
+      };
+      expect(validateOverlap(past)).toEqual([{ pair: [left, right], reason }]);
     }
   });
 
@@ -181,7 +180,7 @@ describe("validateOverlap", () => {
   });
 
   it("keeps a visible gap and stays inside the court on every example", () => {
-    const gap = (coords: Coords, exempt: boolean) => {
+    const gap = (coords: Coords) => {
       const distances: number[] = [];
       const columns: Array<[Position, Position]> = [
         [2, 1],
@@ -189,7 +188,6 @@ describe("validateOverlap", () => {
         [4, 5],
       ];
       for (const [front, back] of columns) {
-        if (exempt && front === 2) continue;
         distances.push(coords[back].y - coords[front].y);
       }
       for (const [left, right] of [
@@ -202,37 +200,76 @@ describe("validateOverlap", () => {
         [5, 6],
         [6, 1],
       ] as Array<[Position, Position]>) {
-        if (exempt && right === 1) continue;
         distances.push(coords[right].x - coords[left].x);
       }
       return Math.min(...distances);
     };
 
-    const serveShapes = new Set<string>();
     for (const r of POSITIONS) {
-      expect(gap(RECEIVE_FORMATIONS[r], false)).toBeGreaterThanOrEqual(0.05);
-      expect(gap(SERVE_FORMATIONS[r], true)).toBeGreaterThanOrEqual(0.05);
+      expect(gap(RECEIVE_FORMATIONS[r])).toBeGreaterThanOrEqual(0.05);
       for (const pos of POSITIONS) {
         const receive = RECEIVE_FORMATIONS[r][pos];
         expect(receive.x).toBeGreaterThanOrEqual(0.05);
         expect(receive.x).toBeLessThanOrEqual(0.95);
         expect(receive.y).toBeGreaterThanOrEqual(0.05);
         expect(receive.y).toBeLessThanOrEqual(0.95);
-        if (pos !== 1) {
-          const serve = SERVE_FORMATIONS[r][pos];
-          expect(serve.x).toBeGreaterThanOrEqual(0.05);
-          expect(serve.x).toBeLessThanOrEqual(0.95);
-          expect(serve.y).toBeGreaterThanOrEqual(0.05);
-          expect(serve.y).toBeLessThanOrEqual(0.95);
-        }
       }
-      const lineup = lineupForPhase(r, "receive");
+      const lineup = receiveLineup(r);
       const passerXs = POSITIONS.filter((pos) => isReceivePasser(lineup[pos])).map(
         (pos) => RECEIVE_FORMATIONS[r][pos].x,
       );
       expect(Math.max(...passerXs) - Math.min(...passerXs)).toBeGreaterThanOrEqual(0.4);
-      serveShapes.add(JSON.stringify(SERVE_FORMATIONS[r]));
     }
+  });
+});
+
+describe("validateInsideCourt", () => {
+  it("accepts players standing on the lines", () => {
+    const onTheLines: Coords = {
+      1: { x: 1, y: 1 },
+      2: { x: 1, y: 0 },
+      3: { x: 0.5, y: 0 },
+      4: { x: 0, y: 0 },
+      5: { x: 0, y: 1 },
+      6: { x: 0.5, y: 1 },
+    };
+    expect(validateInsideCourt(onTheLines)).toEqual([]);
+  });
+
+  it("flags a player past any of the four lines", () => {
+    for (const outside of [
+      { x: -0.001, y: 0.5 },
+      { x: 1.001, y: 0.5 },
+      { x: 0.5, y: -0.001 },
+      { x: 0.5, y: 1.001 },
+    ]) {
+      expect(validateInsideCourt({ ...BASE_SLOTS, 6: outside })).toEqual([
+        { pair: [6, 6], reason: "outside-court" },
+      ]);
+    }
+  });
+});
+
+describe("validateReceiveFormation", () => {
+  it("accepts every model serve-receive formation", () => {
+    for (const r of POSITIONS) {
+      expect(validateReceiveFormation(RECEIVE_FORMATIONS[r])).toEqual([]);
+    }
+  });
+
+  it("rejects a hitter left outside the court even without any overlap", () => {
+    // Quiz start of rotation 1: the opposite waits beside the left sideline.
+    const coords = { ...RECEIVE_FORMATIONS[1], 4: BASE_FORMATIONS[1][4] };
+    expect(validateOverlap(coords)).toEqual([]);
+    expect(validateReceiveFormation(coords)).toEqual([{ pair: [4, 4], reason: "outside-court" }]);
+  });
+
+  it("reports overlaps and off-court players together", () => {
+    const coords = { ...BASE_SLOTS, 4: { x: -0.1, y: 0.95 } };
+    expect(validateReceiveFormation(coords).map((v) => v.reason)).toEqual([
+      "front-behind-back",
+      "outside-court",
+    ]);
   });
 });
 
@@ -249,7 +286,7 @@ describe("base formations", () => {
 
   it("puts the libero left back and one outside in the middle back", () => {
     for (const r of POSITIONS) {
-      const lineup = lineupForPhase(r, "receive");
+      const lineup = receiveLineup(r);
       const libero = BASE_FORMATIONS[r][positionOfRole(lineup, "L")];
       expect(libero.x).toBeCloseTo(0.237, 2);
       expect(libero.y).toBeCloseTo(0.591, 2);
@@ -318,15 +355,14 @@ describe("overlapBounds", () => {
     }
   });
 
-  it("treats standing on the line as a violation", () => {
-    const tied: Coords = { ...BASE_SLOTS, 6: { x: BASE_SLOTS[6].x, y: BASE_SLOTS[3].y } };
-    const againstMiddle = overlapBounds(6, tied).find((b) => b.other === 3);
-    expect(againstMiddle?.violated).toBe(true);
-    expect(
-      overlapBounds(6, tied)
-        .filter((b) => b.axis === "x")
-        .every((b) => !b.violated),
-    ).toBe(true);
+  it("allows standing on the line and flags standing past it", () => {
+    const tied: Coords = { ...BASE_SLOTS, 6: { x: BASE_SLOTS[5].x, y: BASE_SLOTS[3].y } };
+    expect(overlapBounds(6, tied).every((b) => !b.violated)).toBe(true);
+    const past = overlapBounds(6, BASE_SLOTS, {
+      x: BASE_SLOTS[5].x - 0.001,
+      y: BASE_SLOTS[3].y - 0.001,
+    });
+    expect(past.filter((b) => b.violated).map((b) => b.other)).toEqual([5, 3]);
   });
 
   it("judges a preview position without moving the neighbours", () => {
@@ -337,17 +373,6 @@ describe("overlapBounds", () => {
     expect(overlapBounds(3, BASE_SLOTS).find((b) => b.other === 6)?.violated).toBe(false);
   });
 
-  it("drops the server's lines while that team is serving", () => {
-    const bounds = overlapBounds(1, BASE_SLOTS, BASE_SLOTS[1], { serverExempt: true });
-    expect(bounds).toEqual([]);
-    expect(
-      overlapBounds(2, BASE_SLOTS, BASE_SLOTS[2], { serverExempt: true }).map((b) => b.other),
-    ).toEqual([3]);
-    expect(
-      overlapBounds(6, BASE_SLOTS, BASE_SLOTS[6], { serverExempt: true }).map((b) => b.other),
-    ).toEqual([5, 3]);
-  });
-
   it("matches validateOverlap on both sides of every broken pair", () => {
     const layouts: Coords[] = [
       BASE_SLOTS,
@@ -355,8 +380,8 @@ describe("overlapBounds", () => {
       { ...BASE_SLOTS, 4: { x: 0.9, y: 0.17 } },
       { ...BASE_SLOTS, 1: { x: 0.2, y: 0.05 } },
       { ...BASE_SLOTS, 6: { x: BASE_SLOTS[5].x, y: BASE_SLOTS[3].y } },
+      { ...BASE_SLOTS, 6: { x: BASE_SLOTS[5].x - 0.001, y: BASE_SLOTS[3].y - 0.001 } },
       ...POSITIONS.map((r) => RECEIVE_FORMATIONS[r]),
-      ...POSITIONS.map((r) => SERVE_FORMATIONS[r]),
     ];
 
     for (const coords of layouts) {
@@ -374,37 +399,12 @@ describe("overlapBounds", () => {
       }
     }
   });
-
-  it("matches validateOverlap when the server is exempt", () => {
-    const layouts: Coords[] = [
-      BASE_SLOTS,
-      { ...BASE_SLOTS, 1: { x: 0.2, y: 0.05 } },
-      ...POSITIONS.map((r) => SERVE_FORMATIONS[r]),
-    ];
-    const options = { serverExempt: true } as const;
-
-    for (const coords of layouts) {
-      const violations = validateOverlap(coords, options);
-      for (const pos of POSITIONS) {
-        const fromBounds = overlapBounds(pos, coords, coords[pos], options)
-          .filter((b) => b.violated)
-          .map((b) => b.other)
-          .sort();
-        const fromRules = violations
-          .filter((v) => v.pair.includes(pos))
-          .map((v) => v.pair.find((p) => p !== pos)!)
-          .sort();
-        expect(fromBounds).toEqual(fromRules);
-      }
-    }
-  });
 });
 
 describe("quiz start position", () => {
   it("is never already a correct answer", () => {
     for (const r of POSITIONS) {
-      expect(validateOverlap(BASE_FORMATIONS[r]).length).toBeGreaterThan(0);
-      expect(validateServeFormation(BASE_FORMATIONS[r]).length).toBeGreaterThan(0);
+      expect(validateReceiveFormation(BASE_FORMATIONS[r]).length).toBeGreaterThan(0);
     }
   });
 });
@@ -425,29 +425,19 @@ describe("validateBasePositions", () => {
   });
 });
 
-describe("lineupForPhase", () => {
+describe("receiveLineup", () => {
   it("puts the libero in for the back-row middle on receive", () => {
     for (const r of POSITIONS) {
-      const lineup = lineupForPhase(r, "receive");
+      const lineup = receiveLineup(r);
       const libero = positionOfRole(lineup, "L");
       expect(isFrontRow(libero)).toBe(false);
       expect(Object.values(lineup).filter((role) => role.startsWith("MB"))).toHaveLength(1);
     }
   });
 
-  it("lets a middle serve from position 1 instead of the libero", () => {
-    for (const r of POSITIONS) {
-      const base = lineupForRotation(r);
-      const serving = lineupForPhase(r, "serve");
-      const middleServes = base[1] === "MB1" || base[1] === "MB2";
-      expect(serving[1]).toBe(base[1]);
-      expect(Object.values(serving).includes("L")).toBe(!middleServes);
-    }
-  });
-
   it("always has exactly three passers, never the setter or the opposite", () => {
     for (const r of POSITIONS) {
-      const lineup = lineupForPhase(r, "receive");
+      const lineup = receiveLineup(r);
       const passers = POSITIONS.filter((p) => isReceivePasser(lineup[p]));
       expect(passers).toHaveLength(3);
       expect(passers.some((p) => lineup[p] === "S" || lineup[p] === "OPP")).toBe(false);
@@ -458,12 +448,9 @@ describe("lineupForPhase", () => {
 describe("playing without a libero", () => {
   it("keeps the back-row middle on court and still has three passers", () => {
     for (const r of POSITIONS) {
-      for (const phase of ["serve", "receive"] as const) {
-        const lineup = lineupForPhase(r, phase, false);
-        expect(Object.values(lineup)).not.toContain("L");
-        expect(lineup).toEqual(lineupForRotation(r));
-      }
-      const lineup = lineupForPhase(r, "receive", false);
+      const lineup = receiveLineup(r, false);
+      expect(Object.values(lineup)).not.toContain("L");
+      expect(lineup).toEqual(lineupForRotation(r));
       const passers = POSITIONS.filter((p) => isPasserAt(lineup, p));
       expect(passers).toHaveLength(3);
       expect(passers.some((p) => lineup[p] === "S" || lineup[p] === "OPP")).toBe(false);
